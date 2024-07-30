@@ -68,6 +68,7 @@ module.exports.updateSchedule = async (event) => {
       scheduleName,
       scheduleTime,
       scheduleTimezone,
+      scheduleGroupName,
       to,
       from,
       subject,
@@ -78,6 +79,7 @@ module.exports.updateSchedule = async (event) => {
       Name: scheduleName,
       ScheduleExpression: `at(${scheduleTime})`,
       ScheduleExpressionTimezone: scheduleTimezone,
+      GroupName: scheduleGroupName,
       State: 'ENABLED',
       ActionAfterCompletion: 'DELETE',
       Target: {
