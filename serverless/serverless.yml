@@ -47,65 +47,130 @@ provider:
         - iam:PassRole
       Resource: !GetAtt EventBridgeRole.Arn
 
+package:
+  individually: true
+
 functions:
-  emailSender:
-    handler: functions/email-sender.sendEmail
-    name: EmailSenderFunction
+  sendMail:
+    name: SendMailFunction
+    handler: src/functions/sendMail.handler
     timeout: 10
+    events:
+      - http:
+          path: send-mail
+          method: post
+          cors: true
+    logRetentionInDays: 7
+    package:
+      exclude:
+        - './**'
+      include:
+        - ./src/functions/sendMail.js
+        - ./node_modules/**
+        - ./package.json
+
+  emailReminder:
+    handler: src/functions/sendMailReminder.handler
+    name: EmailReminderFunction
+    timeout: 10
+    package:
+      exclude:
+        - './**'
+      include:
+        - ./src/functions/sendMail.js
+        - ./src/functions/sendMailReminder.js
+        - ./node_modules/**
+        - ./package.json
 
   createSchedules:
-    handler: functions/scheduler.createSchedules
+    handler: src/functions/createSchedules.handler
+    name: CreateSchedulesFunction
     environment:
-      EMAIL_SENDER_ARN: !GetAtt EmailSenderLambdaFunction.Arn
+      EMAIL_SENDER_ARN: !GetAtt EmailReminderLambdaFunction.Arn
     timeout: 20
     events:
       - http:
           path: create-schedules
           method: post
           cors: true
+    logRetentionInDays: 7
+    package:
+      exclude:
+        - './**'
+      include:
+        - ./src/functions/createSchedules.js
+        - ./node_modules/**
+        - ./package.json
 
   updateSchedule:
-    handler: functions/scheduler.updateSchedule
+    handler: src/functions/updateSchedule.handler
+    name: UpdateScheduleFunction
     environment:
-      EMAIL_SENDER_ARN: !GetAtt EmailSenderLambdaFunction.Arn
+      EMAIL_SENDER_ARN: !GetAtt EmailReminderLambdaFunction.Arn
     timeout: 15
     events:
       - http:
           path: update-schedule
           method: put
           cors: true
+    logRetentionInDays: 7
+    package:
+      exclude:
+        - './**'
+      include:
+        - ./src/functions/updateSchedule.js
+        - ./node_modules/**
+        - ./package.json
 
   listSchedules:
-    handler: functions/scheduler.listSchedules
+    handler: src/functions/listSchedules.handler
+    name: ListSchedulesFunction
     timeout: 20
     events:
       - http:
           path: list-schedules
           method: get
           cors: true
+    logRetentionInDays: 7
+    package:
+      exclude:
+        - './**'
+      include:
+        - ./src/functions/listSchedules.js
+        - ./node_modules/**
+        - ./package.json
 
   deleteSchedule:
-    handler: functions/scheduler.deleteSchedule
+    handler: src/functions/deleteSchedule.handler
+    name: DeleteScheduleFunction
     timeout: 15
     events:
       - http:
           path: delete-schedule
           method: delete
           cors: true
+    logRetentionInDays: 7
+    package:
+      exclude:
+        - './**'
+      include:
+        - ./src/functions/deleteSchedule.js
+        - ./node_modules/**
+        - ./package.json
 
 resources:
   Outputs:
-    EmailSenderFunctionArn:
-      Value: !GetAtt EmailSenderLambdaFunction.Arn
+    EmailReminderFunctionArn:
+      Value: !GetAtt EmailReminderLambdaFunction.Arn
       Export:
-        Name: EmailSenderFunctionArn
+        Name: EmailReminderFunctionArn
 
   Resources:
     LogGroup:
       Type: AWS::Logs::LogGroup
       Properties:
         LogGroupName: /aws/lambda/${self:service}-${self:provider.stage}
-        RetentionInDays: 3
+        RetentionInDays: 7
     EventBridgeRole:
       Type: AWS::IAM::Role
       Properties:
@@ -126,7 +191,7 @@ resources:
                 - Effect: Allow
                   Action:
                     - lambda:InvokeFunction
-                  Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EmailSenderFunction
+                  Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EmailReminderFunction
           - PolicyName: EventBridgeSchedulerPermissions
             PolicyDocument:
               Version: '2012-10-17'
