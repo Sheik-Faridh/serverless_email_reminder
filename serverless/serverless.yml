@@ -50,6 +50,15 @@ provider:
 package:
   individually: true
 
+layers:
+  commonDependencies:
+    path: layer
+    name: ${self:service}-${opt:stage, self:provider.stage}-common-dependencies
+    description: Common dependencies for all functions
+    compatibleRuntimes:
+      - nodejs20.x
+    retain: false
+
 functions:
   sendMail:
     name: SendMailFunction
@@ -61,46 +70,46 @@ functions:
           method: post
           cors: true
     logRetentionInDays: 7
+    layers:
+      - { Ref: CommonDependenciesLambdaLayer }
     package:
       exclude:
         - './**'
       include:
         - ./src/functions/sendMail.js
-        - ./node_modules/**
-        - ./package.json
 
   emailReminder:
     handler: src/functions/sendMailReminder.handler
     name: EmailReminderFunction
     timeout: 10
+    layers:
+      - { Ref: CommonDependenciesLambdaLayer }
     package:
       exclude:
         - './**'
       include:
         - ./src/functions/sendMail.js
         - ./src/functions/sendMailReminder.js
-        - ./node_modules/**
-        - ./package.json
 
   createSchedules:
     handler: src/functions/createSchedules.handler
     name: CreateSchedulesFunction
     environment:
       EMAIL_SENDER_ARN: !GetAtt EmailReminderLambdaFunction.Arn
-    timeout: 20
+    timeout: 30
     events:
       - http:
           path: create-schedules
           method: post
           cors: true
     logRetentionInDays: 7
+    layers:
+      - { Ref: CommonDependenciesLambdaLayer }
     package:
       exclude:
         - './**'
       include:
         - ./src/functions/createSchedules.js
-        - ./node_modules/**
-        - ./package.json
 
   updateSchedule:
     handler: src/functions/updateSchedule.handler
@@ -114,13 +123,13 @@ functions:
           method: put
           cors: true
     logRetentionInDays: 7
+    layers:
+      - { Ref: CommonDependenciesLambdaLayer }
     package:
       exclude:
         - './**'
       include:
         - ./src/functions/updateSchedule.js
-        - ./node_modules/**
-        - ./package.json
 
   listSchedules:
     handler: src/functions/listSchedules.handler
@@ -132,13 +141,13 @@ functions:
           method: get
           cors: true
     logRetentionInDays: 7
+    layers:
+      - { Ref: CommonDependenciesLambdaLayer }
     package:
       exclude:
         - './**'
       include:
         - ./src/functions/listSchedules.js
-        - ./node_modules/**
-        - ./package.json
 
   deleteSchedule:
     handler: src/functions/deleteSchedule.handler
@@ -150,13 +159,13 @@ functions:
           method: delete
           cors: true
     logRetentionInDays: 7
+    layers:
+      - { Ref: CommonDependenciesLambdaLayer }
     package:
       exclude:
         - './**'
       include:
         - ./src/functions/deleteSchedule.js
-        - ./node_modules/**
-        - ./package.json
 
 resources:
   Outputs:
