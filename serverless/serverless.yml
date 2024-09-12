@@ -60,6 +60,17 @@ layers:
     retain: false
 
 functions:
+  authorizer:
+    handler: src/functions/authorizer.handler
+    name: AuthorizerFunction
+    environment:
+      API_KEY: ${ssm:/serverless_email_remainder_api_key}
+    logRetentionInDays: 7
+    package:
+      exclude:
+        - './**'
+      include:
+        - ./src/functions/authorizer.js
   sendMail:
     name: SendMailFunction
     handler: src/functions/sendMail.handler
@@ -69,6 +80,11 @@ functions:
           path: send-mail
           method: post
           cors: true
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            type: request
     logRetentionInDays: 7
     layers:
       - { Ref: CommonDependenciesLambdaLayer }
@@ -82,6 +98,7 @@ functions:
     handler: src/functions/sendMailReminder.handler
     name: EmailReminderFunction
     timeout: 10
+    logRetentionInDays: 7
     layers:
       - { Ref: CommonDependenciesLambdaLayer }
     package:
@@ -102,6 +119,11 @@ functions:
           path: create-schedules
           method: post
           cors: true
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            type: request
     logRetentionInDays: 7
     layers:
       - { Ref: CommonDependenciesLambdaLayer }
@@ -122,6 +144,11 @@ functions:
           path: update-schedule
           method: put
           cors: true
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            type: request
     logRetentionInDays: 7
     layers:
       - { Ref: CommonDependenciesLambdaLayer }
@@ -140,6 +167,11 @@ functions:
           path: list-schedules
           method: get
           cors: true
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            type: request
     logRetentionInDays: 7
     layers:
       - { Ref: CommonDependenciesLambdaLayer }
@@ -158,6 +190,11 @@ functions:
           path: delete-schedule
           method: delete
           cors: true
+          authorizer:
+            name: authorizer
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            type: request
     logRetentionInDays: 7
     layers:
       - { Ref: CommonDependenciesLambdaLayer }
@@ -175,6 +212,20 @@ resources:
         Name: EmailReminderFunctionArn
 
   Resources:
+    GatewayResponseDefault4XX:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.WWW-Authenticate: "'Basic'"
+        ResponseTemplates:
+          application/json: |
+            {
+              "message": "$context.authorizer.error"
+            }
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'
     LogGroup:
       Type: AWS::Logs::LogGroup
       Properties:

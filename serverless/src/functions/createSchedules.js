@@ -10,8 +10,8 @@ async function createSchedule({
   from,
   subject,
   scheduleGroupName,
-  scheduleTimezone,
   content,
+  scheduleTimezone = 'America/New_York',
   callbackUrl = null,
 }) {
   const scheduleParams = {
@@ -45,7 +45,7 @@ async function createSchedule({
   return result;
 }
 
-module.exports.handler = async (event) => {
+exports.handler = async (event) => {
   try {
     const { schedules } = JSON.parse(event.body);
     if (!schedules?.length)
@@ -56,12 +56,30 @@ module.exports.handler = async (event) => {
         }),
       };
     console.log('Create Schedules');
-    const results = await Promise.all(schedules.map(createSchedule));
+    const results = await Promise.allSettled(schedules.map(createSchedule));
+    const { created, failed } = results.reduce(
+      (acc, result, index) => {
+        const scheduleName = schedules[index].scheduleName;
+        if (result.status === 'fulfilled') acc.created.push(scheduleName);
+        else {
+          acc.failed.push(scheduleName);
+          console.log(`failed to create the schedule for ${scheduleName}`);
+          console.log(result.reason);
+        }
+        return acc;
+      },
+      { created: [], failed: [] }
+    );
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: 'Schedules created successfully',
-        results,
+        message: created.length
+          ? 'Schedules created successfully'
+          : 'No schedules created',
+        schedules: {
+          created,
+          failed,
+        },
       }),
     };
   } catch (error) {

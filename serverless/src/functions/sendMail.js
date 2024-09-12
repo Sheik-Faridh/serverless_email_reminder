@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const ses = new AWS.SES();
 
-module.exports.handler = async (event) => {
+exports.handler = async (event) => {
   try {
     console.log('send mail function invoked with event:', event.body);
     const { to, subject, content, from } = JSON.parse(event.body);

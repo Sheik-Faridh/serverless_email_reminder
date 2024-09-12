@@ -1,6 +1,6 @@
 const { handler: sendMail } = require('./sendMail');
 
-module.exports.handler = async (event) => {
+exports.handler = async (event) => {
   try {
     console.log(
       'sendEmailReminder function invoked with event:',

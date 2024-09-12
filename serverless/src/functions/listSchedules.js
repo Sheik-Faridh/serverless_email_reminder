@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const scheduler = new AWS.Scheduler();
 
-module.exports.handler = async (event) => {
+exports.handler = async (event) => {
   try {
     const queryParams = event?.queryStringParameters;
     if (!queryParams)

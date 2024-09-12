@@ -3,17 +3,17 @@ const scheduler = new AWS.Scheduler();
 
 const EMAIL_SENDER_ARN = process.env.EMAIL_SENDER_ARN;
 
-module.exports.handler = async (event) => {
+exports.handler = async (event) => {
   try {
     const {
       scheduleName,
       scheduleTime,
-      scheduleTimezone,
       scheduleGroupName,
       to,
       from,
       subject,
       content,
+      scheduleTimezone = 'America/New_York',
       callbackUrl = null,
     } = JSON.parse(event.body);
     console.log('Update Schedule', scheduleName);
