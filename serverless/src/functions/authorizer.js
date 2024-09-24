@@ -1,4 +1,5 @@
-const API_KEY = process.env.API_KEY;
+const AWS = require('aws-sdk');
+const secretsManager = new AWS.SecretsManager();
 
 const generatePolicy = (principalId, effect, resource, errorMsg = '') => {
   const authResponse = { principalId };
@@ -36,6 +37,13 @@ exports.handler = async (event) => {
         'Missing Authorization header'
       );
     }
+
+    const secretName = process.env.API_KEY_SECRET_NAME;
+
+    const secretData = await secretsManager
+      .getSecretValue({ SecretId: secretName })
+      .promise();
+    const API_KEY = secretData.SecretString;
 
     const [authType, encodedCreds] = authorizationHeader.split(' ');
 

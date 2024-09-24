@@ -46,6 +46,10 @@ provider:
       Action:
         - iam:PassRole
       Resource: !GetAtt EventBridgeRole.Arn
+    - Effect: Allow
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: !Ref ApiKeySecret
 
 package:
   individually: true
@@ -64,8 +68,10 @@ functions:
     handler: src/functions/authorizer.handler
     name: AuthorizerFunction
     environment:
-      API_KEY: ${ssm:/serverless_email_remainder_api_key}
+      API_KEY_SECRET_NAME: !Ref ApiKeySecret
     logRetentionInDays: 7
+    layers:
+      - { Ref: CommonDependenciesLambdaLayer }
     package:
       exclude:
         - './**'
@@ -210,8 +216,18 @@ resources:
       Value: !GetAtt EmailReminderLambdaFunction.Arn
       Export:
         Name: EmailReminderFunctionArn
+    ApiKeySecretArn:
+      Value: !Ref ApiKeySecret
+      Export:
+        Name: ${self:service}-${self:provider.stage}-ApiKeySecretArn
 
   Resources:
+    ApiKeySecret:
+      Type: 'AWS::SecretsManager::Secret'
+      Properties:
+        Name: ${self:service}/${self:provider.stage}/api-key
+        Description: 'API Key for the authorizer function'
+        SecretString: p1Jl3S3Ljaw1otCulto8pWCnt6VXnteD
     GatewayResponseDefault4XX:
       Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:
