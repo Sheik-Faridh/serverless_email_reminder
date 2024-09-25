@@ -11,8 +11,6 @@ phases:
   pre_build:
     commands:
       - echo "Installing dependencies..."
-      - mkdir -p layer/nodejs
-      - cp package.json layer/nodejs/
       - cd layer/nodejs
       - yarn install --production
       - cd ../..
