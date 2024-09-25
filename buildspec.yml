@@ -5,12 +5,13 @@ phases:
     runtime-versions:
       nodejs: 20
     commands:
-      - npm install -g serverless
-      - npm install -g yarn
+      - npm install -g serverless@4.4.1
+      - npm install -g yarn@1.22.22
 
   pre_build:
     commands:
       - echo "Authenticating with Serverless Framework..."
+      - echo "SERVERLESS_ACCESS_KEY value: ${SERVERLESS_ACCESS_KEY}..."
       - serverless login
       - echo "Installing dependencies..."
       - cd layer/nodejs
