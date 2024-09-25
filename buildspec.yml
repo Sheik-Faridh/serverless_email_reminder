@@ -10,9 +10,6 @@ phases:
 
   pre_build:
     commands:
-      - echo "Setting up Serverless credentials..."
-      - mkdir -p ~/.serverless
-      - echo '{"accessKey":"'$SERVERLESS_ACCESS_KEY'"}' > ~/.serverless/config.json
       - echo "Installing dependencies..."
       - cd layer/nodejs
       - yarn install --production
