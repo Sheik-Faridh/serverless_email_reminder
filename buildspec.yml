@@ -11,7 +11,7 @@ phases:
   pre_build:
     commands:
       - echo "Authenticating with Serverless Framework..."
-      - echo "SERVERLESS_ACCESS_KEY value: $SERVERLESS_ACCESS_KEY"
+      - echo "SERVERLESS_ACCESS_KEY value:" ${SERVERLESS_ACCESS_KEY}
       - serverless login
       - echo "Installing dependencies..."
       - cd layer/nodejs
