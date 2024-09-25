@@ -10,6 +10,8 @@ phases:
 
   pre_build:
     commands:
+      - echo "Authenticating with Serverless Framework..."
+      - serverless login --provider aws --key $SERVERLESS_ACCESS_KEY
       - echo "Installing dependencies..."
       - cd layer/nodejs
       - yarn install --production
