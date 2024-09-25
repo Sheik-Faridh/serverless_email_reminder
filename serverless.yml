@@ -1,3 +1,5 @@
+org: sheikfaridh
+app: serverless
 service: serverless
 
 provider:
