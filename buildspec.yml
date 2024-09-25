@@ -1,0 +1,35 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - npm install -g serverless
+      - npm install -g yarn
+
+  pre_build:
+    commands:
+      - echo "Installing dependencies..."
+      - mkdir -p layer/nodejs
+      - cp package.json layer/nodejs/
+      - cd layer/nodejs
+      - yarn install --production
+      - cd ../..
+
+  build:
+    commands:
+      - echo "Packaging and deploying with Serverless Framework..."
+      - >
+        serverless deploy --stage $STAGE --region $REGION 
+        --param="apiKeySecret=${API_KEY_SECRET}" 
+        --verbose
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: .serverless
+
+cache:
+  paths:
+    - 'layer/nodejs/node_modules/**/*'

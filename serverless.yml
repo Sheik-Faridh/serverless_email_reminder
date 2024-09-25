@@ -1,13 +1,12 @@
-org: sheikfaridh
-app: serverless
-service: serverless-email-reminder
+service: serverless
 
 provider:
   name: aws
   runtime: nodejs20.x
-  profile: email_reminder_profile
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'ap-south-1'}
+  deploymentBucket:
+    name: serverless-framework-email-reminder-deployment-bucket
   environment:
     EVENTBRIDGE_ROLE_ARN: !GetAtt EventBridgeRole.Arn
   iamRoleStatements:
@@ -227,7 +226,7 @@ resources:
       Properties:
         Name: ${self:service}/${self:provider.stage}/api-key
         Description: 'API Key for the authorizer function'
-        SecretString: p1Jl3S3Ljaw1otCulto8pWCnt6VXnteD
+        SecretString: ${param:apiKeySecret}
     GatewayResponseDefault4XX:
       Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:
